@@ -28,8 +28,13 @@ def get_client() -> Letta:
 # 智谱国内开放平台（OpenAI 兼容）。server 从 OPENAI_API_KEY 读 key。
 ZHIPU_BASE = "https://open.bigmodel.cn/api/paas/v4"
 
+# 模型可配置（用环境变量 LLM_MODEL 切换）：
+#   glm-4.6（默认）：能可靠地多步链式调工具、遵守指令——本应用是 agentic 多工具编排，需要它。
+#   glm-4-flash    ：免费，但工具链易断、会无视否定指令，复盘等多步任务不稳，仅适合简单 demo。
+LLM_MODEL = os.environ.get("LLM_MODEL", "glm-4.6")
+
 LLM_CONFIG = {
-    "model": "glm-4-flash",            # 免费聊天模型
+    "model": LLM_MODEL,
     "model_endpoint_type": "openai",
     "model_endpoint": ZHIPU_BASE,
     "context_window": 128000,

@@ -64,17 +64,27 @@ python chat.py "我3.1做空500个BTC，现在2.9"       # 单条
 | `journal/tools.py` | 自定义工具源码（盈亏、仓位风险）|
 | `journal/agent.py` | 创建/加载 Agent，挂记忆块 + 工具 |
 
-## Roadmap（已知改进点）
+## 模型选择（一个真实的工程教训）
 
-- [ ] **确定性归档**：目前归档内容由模型自由书写，弱模型（glm-4-flash）偶尔写错数字。
-      改为自定义 `log_trade(symbol, side, entry, exit, pnl, reason)` 工具来**格式化**记录，杜绝笔误。
-- [ ] 增加 `win_rate` / `avg_pnl` 统计工具，复盘给量化结论。
+本应用是**多工具 agentic 编排**（算账→格式化→归档→检索→复盘），对模型的工具链与指令遵从要求高：
+
+| 模型 | 成本 | 表现 |
+|---|---|---|
+| **glm-4.6**（默认） | 便宜（按量） | 可靠链式调工具、遵守指令、复盘到位 ✅ |
+| glm-4-flash | 免费 | 工具链会断、无视否定指令，复盘不稳 —— 仅适合简单 demo |
+
+切换：`.env` 里设 `LLM_MODEL=glm-4-flash`。结论：**agentic 任务别用太弱的模型**。
+
+## Roadmap
+
+- [x] **确定性归档**：`log_trade` 工具自己算 PnL 并返回规范记录，模型只需原样归档，杜绝数字笔误。
+- [ ] 增加 `win_rate` / `avg_pnl` 自定义统计工具（目前靠模型口算，可下沉为确定性工具）。
 - [ ] 接真实行情：`get_price(symbol)` 工具调 Hyperliquid/交易所 API，"现在多少"自动取价。
-- [ ] 升级到更强模型（glm-4.6）对比工具选择准确率。
+- [ ] 让自定义工具直接写归档（`agent_state` 注入），把记录两步合并为一步。
 
 ## 技术栈
 
-Letta 0.16.x · letta-client SDK · 智谱 GLM（OpenAI 兼容）· Postgres + pgvector
+Letta 0.16.x · letta-client SDK · 智谱 GLM（OpenAI 兼容，glm-4.6 / embedding-3）· Postgres + pgvector
 
 ---
 基于 Letta（Apache-2.0）二次开发。
